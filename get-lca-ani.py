@@ -11,14 +11,14 @@ from sourmash.logging import notify
 
 
 def get_lca_ani_stats(db_cursor, lca_name):
-    db_cursor.execute(''' SELECT MIN(ani), AVG(ani), MAX(ani) 
+    db_cursor.execute(''' SELECT MIN(ani), AVG(ani), MAX(ani)
                           FROM comparisons WHERE lca_name=?
                       ''', (lca_name,))
     min, avg, max = db_cursor.fetchall()[0]
     return min, avg, max
 
 def get_rank_ani_stats(db_cursor, lca_rank):
-    db_cursor.execute(''' SELECT MIN(ani), AVG(ani), MAX(ani) 
+    db_cursor.execute(''' SELECT MIN(ani), AVG(ani), MAX(ani)
                           FROM comparisons WHERE lca_rank=?
                       ''', (lca_rank,))
     min,avg,max = db_cursor.fetchall()[0]
@@ -30,11 +30,11 @@ def main(args):
     # load sqlite table
     db = sqlite3.connect(args.anidb)
     c = db.cursor()
-
+    print("        minANI | avgANI | maxANI")
     for rank in tax_utils.ascending_taxlist():
         ani_min, ani_avg, ani_max = get_rank_ani_stats(c, rank)
         notify(f"{rank}: {ani_min} | {ani_avg} | {ani_max}")
-   
+
 
 
 
