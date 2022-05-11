@@ -61,8 +61,14 @@ def main(args):
     # load in taxonomy
     tax_assign = tax_utils.MultiLineageDB.load(args.taxonomy_csvs, keep_identifier_versions=False)
 
+    # handle file input
+    prefetch_csvs = args.prefetch_csvs
+    if args.from_file:
+        ff_csvs = [x.strip() for x in open(args.from_file, 'r')]
+        prefetch_csvs += ff_csvs
+
     # read in each file and load into table
-    for inF in args.prefetch_csvs:
+    for inF in prefetch_csvs:
         with open(inF, 'r') as pf:
             prefetch_r = csv.DictReader(pf)
             for n, row in enumerate(prefetch_r):
@@ -82,7 +88,8 @@ def main(args):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument('prefetch_csvs', nargs='+')
+    p.add_argument('prefetch_csvs', nargs='*')
+    p.add_argument('--from-file', '--prefetch-from-file', help="file containing paths to prefetch csvs")
     p.add_argument('-t', '--taxonomy-csvs', nargs='+', help='taxonomy information')
     p.add_argument('-o', '--output', required=True, help='SQLite database')
     args = p.parse_args()
