@@ -1,0 +1,8 @@
+name: 2022-ani-sql
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - sourmash>=4.3
