@@ -6,7 +6,7 @@ Run: snakemake -j1 -n
 import pandas as pd
 import numpy as np
 
-configfile: conf/gtdb-rs207.yml
+configfile: "conf/gtdb-rs207.yml"
 
 gtdb_taxonomy=config.get('gtdb_taxonomy', '/group/ctbrowngrp/sourmash-db/gtdb-rs207/gtdb-rs207.taxonomy.csv.gz')
 
@@ -50,7 +50,7 @@ rule all:
 # use prefetch to do comparison for each ident 
 rule protein_all_prefetch:
     input: 
-        db=f"{database_dir}/gtdb-rs207.{{alphabet}}.k{{ksize}}.zip", # scaled 200
+        db=f"{database_dir}/gtdb-rs207.protein.k{{ksize}}.zip", # scaled 200
     output: f"{out_dir}/prefetch/gtdb-all/{{acc}}.protein-k{{ksize}}.prefetch.csv"
     params:
         alpha= "--protein",
