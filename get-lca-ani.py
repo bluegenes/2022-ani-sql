@@ -26,21 +26,35 @@ def get_rank_ani_stats(db_cursor, lca_rank):
 
 
 def main(args):
-    pass
     # load sqlite table
     db = sqlite3.connect(args.anidb)
     c = db.cursor()
-    print("        minANI | avgANI | maxANI")
-    for rank in tax_utils.ascending_taxlist():
-        ani_min, ani_avg, ani_max = get_rank_ani_stats(c, rank)
-        notify(f"{rank}: {ani_min} | {ani_avg} | {ani_max}")
+    notify("rank:    minANI | avgANI | maxANI")
+    notify("---------------------------------")
+    header = ['rank', 'minANI', 'avgANI', 'maxANI']
 
+    outF= None
+    if args.output_csv:
+        outF = open(args.output_csv, 'w')
+        outF.write(','.join(header) + "\n")
+
+    for rank in lca_utils.taxlist(include_strain=False):
+        ani_min, ani_avg, ani_max = get_rank_ani_stats(c, rank)
+        info = [ani_min, ani_avg, ani_max]
+        notify(f"{rank}: {ani_min} | {ani_avg} | {ani_max}")
+        # replace None with ""
+        info = ["" if x is None else str(x) for x in info]
+        if outF is not None:
+            outF.write(rank + ',' + ','.join(info) + '\n')
+
+    if outF is not None:
+        outF.close()
 
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument('anidb', help='ANI SQLite database')
-    #p.add_argument('-o', '--output', required=True, help='CSV')
+    p.add_argument('-o', '--output-csv', required=True, help='CSV output')
     args = p.parse_args()
     sys.exit(main(args))
