@@ -44,11 +44,10 @@ def get_lca(name1, name2, lineages):
 def anisql_insert(db_cursor, info_tuple):
     names = ('ident1', 'ident2', 'lca_rank', 'lca_name', 'ani')
     assert len(info_tuple) == len(names)
-    db_cursor.execute('INSERT INTO comparisons (ident1, ident2, lca_rank, lca_name, ani) VALUES (?, ?, ?, ?, ?)', 
+    db_cursor.execute('INSERT INTO comparisons (ident1, ident2, lca_rank, lca_name, ani) VALUES (?, ?, ?, ?, ?)',
                info_tuple)
 
 def main(args):
-    pass
     # set up sqlite table
     db = sqlite3.connect(args.output)
     c = db.cursor()
@@ -68,20 +67,34 @@ def main(args):
         prefetch_csvs += ff_csvs
 
     # read in each file and load into table
+    comparisons = set()
     for inF in prefetch_csvs:
         with open(inF, 'r') as pf:
             prefetch_r = csv.DictReader(pf)
             for n, row in enumerate(prefetch_r):
-                if n % 10000 == 0:
-                    notify(f"row {n+1}")
+                if n % 50000 == 0:
+                    notify(f"read {n} rows")
                 query_name = row['query_name']
                 match_name = row['match_name']
+                query_id = tax_utils.get_ident(query_name)
+                match_id = tax_utils.get_ident(match_name)
+
+                comparison_name = f"{query_id}_x_{match_id}"
+                reverse_name = f"{match_id}_x_{query_id}"
+
+                if any([comparison_name in comparisons, reverse_name in comparisons]):
+                    # avoid dupes
+                    continue
+                comparisons.add(comparison_name)
+
                 lca_lin = get_lca(query_name, match_name, tax_assign)
                 if lca_lin is None:
+                    # if missing lineage, can't get LCA. Skip.
                     continue
+
                 ani = np.mean([float(row['query_ani']), float(row['match_ani'])])
                 anisql_insert(c, (query_name, match_name, lca_lin[-1].rank, lca_lin[-1].name, ani))
-            
+
     # commit table
     db.commit()
 
@@ -90,7 +103,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument('prefetch_csvs', nargs='*')
     p.add_argument('--from-file', '--prefetch-from-file', help="file containing paths to prefetch csvs")
-    p.add_argument('-t', '--taxonomy-csvs', nargs='+', help='taxonomy information')
+    p.add_argument('-t', '--taxonomy-csvs', nargs='+', required=True, help='taxonomy information')
     p.add_argument('-o', '--output', required=True, help='SQLite database')
     args = p.parse_args()
     sys.exit(main(args))
