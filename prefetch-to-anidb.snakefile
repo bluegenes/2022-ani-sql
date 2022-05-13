@@ -63,7 +63,8 @@ rule protein_all_prefetch:
     threads: 1
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 16000,
-        runtime=200,
+        disk_mb=10000,
+        runtime=240,
         time=200,
         partition="bml",#"low2",
     shell:
@@ -92,10 +93,12 @@ rule nucl_all_prefetch:
     threads: 1
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 20000,
+        disk_mb=10000,
         #mem_mb=lambda wildcards, attempt: attempt * 6000,
-        runtime=120,
-        time=120,
-        partition="low2", #"med2"
+        runtime=240,
+        time=200,
+        partition="bml",#"low2",
+        #partition="low2", #"med2"
     shell:
         """
         echo "DB is {input.db}"
