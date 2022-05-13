@@ -34,6 +34,7 @@ for alpha, info in config["alphabet_info"].items():
     if alpha == 'protein':
         prot_alpha_ksize += expand(f"{alpha}-k{{ksize}}", ksize = ksize)
     if alpha == 'nucleotide':
+        alpha= "genomic"
         nucl_alpha_ksize += expand(f"{alpha}-k{{ksize}}", ksize = ksize)
     alpha_ksize += expand(f"{alpha}-k{{ksize}}", ksize = ksize)
 
@@ -55,13 +56,16 @@ rule protein_all_prefetch:
     params:
         alpha= "--protein",
         threshold_bp=3000,
+        scaled=200,
     log: f"{logs_dir}/prefetch/gtdb-all/{{acc}}.protein-k{{ksize}}.prefetch.log"
     benchmark: f"{logs_dir}/prefetch/gtdb-all/{{acc}}.protein-k{{ksize}}.prefetch.benchmark",
     conda: "conf/env/sourmash4.4.yml"
     threads: 1
     resources:
-        mem_mb=lambda wildcards, attempt: attempt * 15000,
-        runtime=200
+        mem_mb=lambda wildcards, attempt: attempt * 16000,
+        runtime=200,
+        time=200,
+        partition="bml",#"low2",
     shell:
         """
         echo "DB is {input.db}"
@@ -70,7 +74,7 @@ rule protein_all_prefetch:
         sourmash sig grep {wildcards.acc} {input.db} \
                  --ksize {wildcards.ksize} | sourmash prefetch - {input.db} \
                  -o {output} -k {wildcards.ksize} {params.alpha} --exclude-db-pattern {wildcards.acc} \
-                 --threshold-bp={params.threshold_bp} --scaled {wildcards.scaled} > {log} 2>&1
+                 --threshold-bp={params.threshold_bp} --scaled {params.scaled} > {log} 2>&1
         touch {output}
         """
 
@@ -81,13 +85,14 @@ rule nucl_all_prefetch:
     params:
         alpha= "--dna",
         threshold_bp=10000,
+        scaled=1000,
     log: f"{logs_dir}/prefetch/gtdb-all/{{acc}}.genomic-k{{ksize}}.prefetch.log"
     benchmark: f"{logs_dir}/prefetch/gtdb-all/{{acc}}.genomic-k{{ksize}}.prefetch.benchmark",
     conda: "conf/env/sourmash4.4.yml"
     threads: 1
     resources:
-        #mem_mb=lambda wildcards, attempt: attempt * 20000,
-        mem_mb=lambda wildcards, attempt: attempt * 6000,
+        mem_mb=lambda wildcards, attempt: attempt * 20000,
+        #mem_mb=lambda wildcards, attempt: attempt * 6000,
         runtime=120,
         time=120,
         partition="low2", #"med2"
@@ -99,7 +104,7 @@ rule nucl_all_prefetch:
         sourmash sig grep {wildcards.acc} {input.db} \
                  --ksize {wildcards.ksize} | sourmash prefetch - {input.db} \
                  -o {output} -k {wildcards.ksize} {params.alpha} --exclude-db-pattern {wildcards.acc} \
-                 --threshold-bp={params.threshold_bp} --scaled {wildcards.scaled} > {log} 2>&1
+                 --threshold-bp={params.threshold_bp} --scaled {params.scaled} > {log} 2>&1
         touch {output}
         """
 
