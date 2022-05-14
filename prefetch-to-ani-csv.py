@@ -52,7 +52,7 @@ def main(args):
 
     # read in each file and load into table
     with open(args.output_csv, 'w') as outF:
-        fields = ["comparison", "query_id", "match_id", "lca_rank", "lca_lineage", "ani"]
+        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "query_ani", "match_ani", "avg_ani"]
         writer = csv.writer(outF)
         writer.writerow(fields)
 
@@ -62,7 +62,7 @@ def main(args):
                 prefetch_r = csv.DictReader(pf)
                 for n, row in enumerate(prefetch_r):
                     if n % 10000 == 0:
-                        notify(f"row {n+1}")
+                        notify(f"row {n}")
                     query_name = row['query_name']
                     query_id = tax_utils.get_ident(query_name)
                     match_name = row['match_name']
@@ -80,10 +80,12 @@ def main(args):
                     if lca_lin is None:
                         # if missing lineage, can't get LCA. Skip.
                         continue
-                    ani = np.mean([float(row['query_ani']), float(row['match_ani'])])
+                    query_ani = row['query_ani']
+                    match_ani = row['match_ani']
+                    avg_ani = np.mean([float(query_ani), float(match_ani)])
 
                     # write csv
-                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, ani])
+                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, query_ani, match_ani, avg_ani])
 
 
 
