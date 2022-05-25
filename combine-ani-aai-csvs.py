@@ -21,6 +21,9 @@ def main(args):
             # read in comparison info
             comp_name = row["comparison"]
             row["fmh_ani"] = row["avg_ani"]
+            del row["query_ani"]
+            del row["match_ani"]
+            del row["avg_ani"]
             # store in dict
             comparisonD[comp_name] = row
 
@@ -28,7 +31,7 @@ def main(args):
     with open(args.sourmash_ani_csv, 'r') as pf:
         ani_r = csv.DictReader(pf)
         for n, row in enumerate(ani_r):
-            if n % 10000 == 0:
+            if n % 100000 == 0:
                 notify(f"row {n}")
             comp_name = row["comparison"]
             query_name= row["query_name"]
