@@ -39,14 +39,14 @@ def main(args):
             # get dict entry and store
             ref_entry = comparisonD.get(comp_name)
             if ref_entry:
-                fmh_ani = row["query_ani"]
+                #fmh_ani = row["query_ani"]
                 #ref_entry["fmh_ani"] = fmh_ani
                 ref_entry["fmh_ani"] = row["avg_ani"]
                 comparisonD[comp_name] = ref_entry
             else:
                 ref_entry = comparisonD.get(rev_comp_name)
                 if ref_entry:
-                    fmh_ani = row["match_ani"]
+                    #fmh_ani = row["match_ani"]
                     #ref_entry["fmh_ani"] = fmh_ani
                     ref_entry["fmh_ani"] = row["avg_ani"]
                     comparisonD[rev_comp_name] = ref_entry

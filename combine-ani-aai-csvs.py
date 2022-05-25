@@ -16,8 +16,8 @@ def main(args):
     comparisonD = {}
     with open(args.sourmash_ani_csv, 'r') as pf:
         ref_r = csv.DictReader(pf)
+        notify("Reading in nucleotide information...")
         for n, row in enumerate(ref_r):
-            notify("Reading in nucleotide information...")
             # read in comparison info
             comp_name = row["comparison"]
             row["fmh_ani"] = row["avg_ani"]
