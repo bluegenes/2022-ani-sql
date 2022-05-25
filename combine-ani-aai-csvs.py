@@ -28,10 +28,11 @@ def main(args):
             comparisonD[comp_name] = row
 
     # now read in sourmash protein AAI csv and match
-    with open(args.sourmash_ani_csv, 'r') as pf:
+    with open(args.sourmash_aai_csv, 'r') as pf:
         ani_r = csv.DictReader(pf)
+        notify("Reading in protein information...")
         for n, row in enumerate(ani_r):
-            if n % 100000 == 0:
+            if n % 500000 == 0:
                 notify(f"row {n}")
             comp_name = row["comparison"]
             query_name= row["query_name"]
@@ -39,23 +40,34 @@ def main(args):
             match_name = row["match_name"]
             match = tax_utils.get_ident(match_name)
             rev_comp_name = f"{match}_{query}"
-            fmh_aai = row["avg_ani"]
+            fmh_aai = float(row["avg_ani"])
 
             # get dict entry and store
             ani_entry = comparisonD.get(comp_name)
+            fmh_ani = float(ani_entry['fmh_ani'])
             if ani_entry:
                 ani_entry["fmh_aai"] = fmh_aai
+                denom = fmh_ani - fmh_aai
+                if denom == 0 or fmh_ani == 0:
+                    ani_entry['fmh_dnds'] = ""
+                else:
+                    ani_entry['fmh_dnds'] = (1.0 - fmh_aai)/denom
                 comparisonD[comp_name] = ani_entry
             else:
                 ani_entry = comparisonD.get(rev_comp_name)
                 if ani_entry:
                     ani_entry["fmh_aai"] = fmh_aai
+                    denom = fmh_ani - fmh_aai
+                    if denom == 0 or fmh_ani == 0:
+                        ani_entry['fmh_dnds'] = ""
+                    else:
+                        ani_entry['fmh_dnds'] = (1.0 - fmh_aai)/denom
                     comparisonD[rev_comp_name] = ani_entry
             ani_entry = None
 
 
     with open(args.output_csv, 'w') as outF:
-        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "fmh_ani", "fmh_aai"]
+        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "fmh_ani", "fmh_aai", "fmh_dnds"]
         writer = csv.DictWriter(outF, fieldnames=fields)
         writer.writeheader()
 
