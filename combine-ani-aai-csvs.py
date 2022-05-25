@@ -44,30 +44,31 @@ def main(args):
 
             # get dict entry and store
             ani_entry = comparisonD.get(comp_name)
-            fmh_ani = float(ani_entry['fmh_ani'])
             if ani_entry:
                 ani_entry["fmh_aai"] = fmh_aai
+                fmh_ani = float(ani_entry['fmh_ani'])
                 denom = fmh_ani - fmh_aai
                 if denom == 0 or fmh_ani == 0:
-                    ani_entry['fmh_dnds'] = ""
+                    ani_entry['fmh_d_ns'] = ""
                 else:
-                    ani_entry['fmh_dnds'] = (1.0 - fmh_aai)/denom
+                    ani_entry['fmh_d_ns'] = (1.0 - fmh_aai)/denom
                 comparisonD[comp_name] = ani_entry
             else:
                 ani_entry = comparisonD.get(rev_comp_name)
                 if ani_entry:
+                    fmh_ani = float(ani_entry['fmh_ani'])
                     ani_entry["fmh_aai"] = fmh_aai
                     denom = fmh_ani - fmh_aai
                     if denom == 0 or fmh_ani == 0:
-                        ani_entry['fmh_dnds'] = ""
+                        ani_entry['fmh_d_ns'] = ""
                     else:
-                        ani_entry['fmh_dnds'] = (1.0 - fmh_aai)/denom
+                        ani_entry['fmh_d_ns'] = (1.0 - fmh_aai)/denom
                     comparisonD[rev_comp_name] = ani_entry
             ani_entry = None
 
 
     with open(args.output_csv, 'w') as outF:
-        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "fmh_ani", "fmh_aai", "fmh_dnds"]
+        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "fmh_ani", "fmh_aai", "fmh_d_ns"]
         writer = csv.DictWriter(outF, fieldnames=fields)
         writer.writeheader()
 
