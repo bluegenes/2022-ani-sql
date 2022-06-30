@@ -40,6 +40,8 @@ def get_lca(id1, id2, lineages):
         return None
     return lineages_lca(lin1,lin2)
 
+#def get_avg_contanment_ani(query_bp, ):
+
 def main(args):
     # load in taxonomy
     tax_assign = tax_utils.MultiLineageDB.load(args.taxonomy_csvs, keep_identifier_versions=False)
@@ -52,7 +54,10 @@ def main(args):
 
     # read in each file and load into table
     with open(args.output_csv, 'w') as outF:
-        fields = ["comparison", "query_name", "match_name", "lca_rank", "lca_lineage", "query_ani", "match_ani", "avg_ani"]
+        fields = ["comparison", "query_name", "match_name", "lca_rank",
+                  "lca_lineage", "query_ani", "match_ani", "avg_ani",
+                  "query_containment", "match_containment"]
+
         writer = csv.writer(outF)
         writer.writerow(fields)
 
@@ -81,11 +86,13 @@ def main(args):
                         # if missing lineage, can't get LCA. Skip.
                         continue
                     query_ani = row['query_ani']
+                    q_containment = row['f_match_query']
                     match_ani = row['match_ani']
+                    m_containment = row['f_query_match']
                     avg_ani = np.mean([float(query_ani), float(match_ani)])
 
                     # write csv
-                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, query_ani, match_ani, avg_ani])
+                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, query_ani, match_ani, avg_ani, q_containment, m_containment])
 
 
 

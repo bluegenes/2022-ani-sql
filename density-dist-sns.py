@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from sourmash.logging import notify
 from collections import defaultdict
 
+RANK_ORDER = ["species", "genus", "family", "order", "class", "phylum", "superkingdom"]
 
 def main(args):
 
@@ -20,9 +21,9 @@ def main(args):
     if args.protein:
         ani_label = "AAI"
 
+    rank_order = [x for x in RANK_ORDER if x in args.include_ranks]
     # colors, etc
-    rankorder = ["species", "genus", "family", "order", "class", "phylum", "superkingdom"]
-    hex_colors = sns.color_palette("viridis", len(rankorder)).as_hex()
+    hex_colors = sns.color_palette("viridis", len(rank_order)).as_hex()
 
     # read csv
     ani_info = pd.read_csv(args.sourmash_ani_csv, usecols = ['lca_rank', 'lca_lineage','avg_ani']) # avg_ani
@@ -42,8 +43,9 @@ def main(args):
 
     #fig.text(0.07,0.85,f"Distribution of {ani_label} by Lowest Common Ancestor",fontsize=20)
         #fig = g.get_figure()
-        plt.savefig(f"gtdb-rs202.{ani_label}.k{args.ksize}.png")#, bbox_extra_artists=(lgd,), bbox_inches='tight')
-        plt.savefig(f"gtdb-rs202.{ani_label}.k{args.ksize}.pdf")#, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        out_base = args.output_basename
+        plt.savefig(f"{out_base}.{ani_label}.k{args.ksize}.png")#, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        plt.savefig(f"{out_base}.{ani_label}.k{args.ksize}.pdf")#, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
 
@@ -53,6 +55,8 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument('--sourmash-ani-csv', required=True, help= "LCA csv of sourmash comparisons with fmh_ani")
     p.add_argument('--protein', action='store_true')
+    p.add_argument('--include-ranks', nargs='*', default=RANK_ORDER, help="only consider certain LCA ranks")
     p.add_argument('--ksize', required=True)
+    p.add_argument('--output-basename', required=True, default="gtdb-rs202")
     args = p.parse_args()
     sys.exit(main(args))
