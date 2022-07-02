@@ -28,12 +28,16 @@ def main(args):
     # read csv
     ani_info = pd.read_csv(args.sourmash_ani_csv, usecols = ['lca_rank', 'lca_lineage','avg_ani']) # avg_ani
 
+    # subset to included ranks
+    ani_lca = ani_info[ani_info['lca_rank'].isin(rank_order)]
+    print(ani_lca['lca_rank'].unique())
+
     # plot with seaborn
     plt.figure(figsize=(17,12))
     with sns.plotting_context("paper", font_scale=1.8,rc={"font.size":22,"axes.titlesize":22,"axes.labelsize":15}):
         sns.set_style("white")
         #g = sns.kdeplot(data=ani_info, x="avg_ani", hue="lca_rank", fill=True, common_norm=False, palette="crest", alpha=.5, linewidth=2)
-        g = sns.kdeplot(data=ani_info, x="avg_ani", hue="lca_rank", fill=True, common_norm=False, palette="viridis", alpha=.4, linewidth=2)
+        g = sns.kdeplot(data=ani_lca, x="avg_ani", hue="lca_rank", fill=True, common_norm=False, palette="viridis", alpha=.4, linewidth=2)
         #lgd = plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         #plt.gcf().set_size_inches(17, 12)
         plt.xlabel(f"Avg Containment {ani_label}", size=22)

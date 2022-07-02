@@ -8,6 +8,7 @@ import numpy as np
 from sourmash.tax import tax_utils
 from sourmash.lca import lca_utils
 from sourmash.logging import notify
+from sourmash.distance_utils import containment_to_distance
 
 
 def get_lineage(ident, tax_assign):
@@ -56,7 +57,7 @@ def main(args):
     with open(args.output_csv, 'w') as outF:
         fields = ["comparison", "query_name", "match_name", "lca_rank",
                   "lca_lineage", "query_ani", "match_ani", "avg_ani",
-                  "query_containment", "match_containment"]
+                  "query_containment", "match_containment", "avg_containment"]
 
         writer = csv.writer(outF)
         writer.writerow(fields)
@@ -85,14 +86,29 @@ def main(args):
                     if lca_lin is None:
                         # if missing lineage, can't get LCA. Skip.
                         continue
-                    query_ani = row['query_ani']
-                    q_containment = row['f_match_query']
-                    match_ani = row['match_ani']
-                    m_containment = row['f_query_match']
+                    q_containment = float(row['f_match_query'])
+                    m_containment = float(row['f_query_match'])
+                    # depending on version of prefetch, might not have avg contain -- recalc here.
+                    avg_containment = np.mean([q_containment, m_containment])
+
+                    if args.recalculate_ani:
+                        ksize = int(row['ksize'])
+                        scaled = int(row['scaled'])
+                        n_unique_kmers = int(row['query_bp'])
+                        query_dist = containment_to_distance(q_containment, ksize, scaled, n_unique_kmers=n_unique_kmers).dist
+                        match_dist = containment_to_distance(m_containment, ksize, scaled, n_unique_kmers=n_unique_kmers).dist
+                        # don't let any ANI values get zeroed out --> estimate independtly
+                        query_ani = 1-query_dist
+                        match_ani = 1-match_dist
+                    else:
+
+                        query_ani = row['query_ani']
+                        match_ani = row['match_ani']
+
                     avg_ani = np.mean([float(query_ani), float(match_ani)])
 
                     # write csv
-                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, query_ani, match_ani, avg_ani, q_containment, m_containment])
+                    writer.writerow([comparison_name, query_id, match_id, lca_lin[-1].rank, lca_lin[-1].name, query_ani, match_ani, avg_ani, q_containment, m_containment, avg_containment])
 
 
 
@@ -102,5 +118,6 @@ if __name__ == "__main__":
     p.add_argument('--from-file', '--prefetch-from-file', help="file containing paths to prefetch csvs")
     p.add_argument('-t', '--taxonomy-csvs', nargs='+', help='taxonomy information', required=True)
     p.add_argument('-o', '--output-csv', required=True, help='output csv')
+    p.add_argument('-r', '--recalculate-ani', action='store_true')
     args = p.parse_args()
     sys.exit(main(args))

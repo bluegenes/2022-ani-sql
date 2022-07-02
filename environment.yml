@@ -5,7 +5,10 @@ channels:
   - defaults
 dependencies:
   - python=3.9
-  - sourmash>=4.3
+  #- sourmash>=4.3
   - snakemake=7.6.2
   - pandas=1.4.3
   - seaborn=0.11.2
+  - pip
+  - pip:
+    - git+https://github.com/dib-lab/sourmash@latest
